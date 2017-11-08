@@ -33,12 +33,38 @@ static UIInterfaceOrientationMask _orientation = UIInterfaceOrientationMaskAllBu
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {
   UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+  orientation = [self correctOrientationIfNeeded:orientation];
   [self.bridge.eventDispatcher sendDeviceEventWithName:@"specificOrientationDidChange"
                                               body:@{@"specificOrientation": [self getSpecificOrientationStr:orientation]}];
 
   [self.bridge.eventDispatcher sendDeviceEventWithName:@"orientationDidChange"
                                               body:@{@"orientation": [self getOrientationStr:orientation]}];
 
+}
+
+- (UIDeviceOrientation)correctOrientationIfNeeded:(UIDeviceOrientation)orientation {
+  if (orientation == UIDeviceOrientationUnknown ||
+      orientation == UIDeviceOrientationFaceUp ||
+      orientation == UIDeviceOrientationFaceDown) {
+    UIInterfaceOrientation statusBarOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    switch (statusBarOrientation) {
+      case UIInterfaceOrientationPortrait:
+        orientation = UIDeviceOrientationPortrait;
+        break;
+      case UIInterfaceOrientationPortraitUpsideDown:
+        orientation = UIDeviceOrientationPortraitUpsideDown;
+        break;
+      case UIInterfaceOrientationLandscapeLeft:
+        orientation = UIDeviceOrientationLandscapeLeft;
+        break;
+      case UIInterfaceOrientationLandscapeRight:
+        orientation = UIDeviceOrientationLandscapeRight;
+        break;
+      default:
+        break;
+    }
+  }
+  return orientation;
 }
 
 - (NSString *)getOrientationStr: (UIDeviceOrientation)orientation {
@@ -95,6 +121,7 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(getOrientation:(RCTResponseSenderBlock)callback)
 {
   UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+  orientation = [self correctOrientationIfNeeded:orientation];
   NSString *orientationStr = [self getOrientationStr:orientation];
   callback(@[[NSNull null], orientationStr]);
 }
@@ -102,6 +129,7 @@ RCT_EXPORT_METHOD(getOrientation:(RCTResponseSenderBlock)callback)
 RCT_EXPORT_METHOD(getSpecificOrientation:(RCTResponseSenderBlock)callback)
 {
   UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+  orientation = [self correctOrientationIfNeeded:orientation];
   NSString *orientationStr = [self getSpecificOrientationStr:orientation];
   callback(@[[NSNull null], orientationStr]);
 }
