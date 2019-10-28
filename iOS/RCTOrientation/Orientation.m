@@ -120,7 +120,7 @@ RCT_EXPORT_MODULE();
 
 + (BOOL)requiresMainQueueSetup
 {
-   return NO;
+   return YES;
 }
 
 RCT_EXPORT_METHOD(getOrientation:(RCTResponseSenderBlock)callback)
